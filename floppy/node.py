@@ -941,6 +941,9 @@ class ForEach(ForLoop):
     Input('Start', object, list=True)
     Output('ListElement', object)
 
+    def run(self):
+        super(ForEach, self).run()
+
 
 class IsEqual(Node):
     """
