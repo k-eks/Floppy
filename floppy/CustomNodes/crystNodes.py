@@ -81,6 +81,7 @@ class SelectAtom(CrystNode):
         self._Atom([atom for atom in self._AtomList if atom.get_name() == name][0])
 
 
+# maybe do this with a global lookup table
 ALLCELLPARAMETERS = ['a', 'b', 'c', 'alpha', 'beta', 'gamma'] # there is probably a more elegant and global way for this
 class SelectCellParameter(CrystNode):
     """
@@ -98,6 +99,26 @@ class SelectCellParameter(CrystNode):
             self._ParameterValue(self._Cell[ALLCELLPARAMETERS.index(self._CellParameter)])
         except IndexError:
             self._ParameterValue(-1)
+
+
+# maybe do this with a global lookup table
+ALLADPPARAMETERS = ['11', '22', '33', '23', '13', '12'] # there is probably a more elegant and global way for this
+class SelectAdpParameter(CrystNode):
+    """
+    Lets the user choose a cell parameter from a list.
+    :param nodeClass: subclass object of 'Node'.
+    :return: newly created Node instance.
+    """
+    Input('ADP', float, list=True)
+    Input('ADPParameter', str, select=ALLADPPARAMETERS, default='11')
+    Output('ParameterValue', float)
+
+    def run(self):
+        super(SelectAdpParameter, self).run()
+        try:
+            self._ParameterValue(self._ADP[ALLADPPARAMETERS.index(self._ADPParameter)])
+        except IndexError:
+            self._ParameterValue(self._ADP[0]) # Isotropic
 
 
 class PDB2INS(CrystNode):
