@@ -81,6 +81,25 @@ class SelectAtom(CrystNode):
         self._Atom([atom for atom in self._AtomList if atom.get_name() == name][0])
 
 
+ALLCELLPARAMETERS = ['a', 'b', 'c', 'alpha', 'beta', 'gamma'] # there is probably a more elegant and global way for this
+class SelectCellParameter(CrystNode):
+    """
+    Lets the user choose a cell parameter from a list.
+    :param nodeClass: subclass object of 'Node'.
+    :return: newly created Node instance.
+    """
+    Input('Cell', float, list=True)
+    Input('CellParameter', str, select=ALLCELLPARAMETERS, default='a')
+    Output('ParameterValue', float)
+
+    def run(self):
+        super(SelectCellParameter, self).run()
+        try:
+            self._ParameterValue(self._Cell[ALLCELLPARAMETERS.index(self._CellParameter)])
+        except IndexError:
+            self._ParameterValue(-1)
+
+
 class PDB2INS(CrystNode):
     Input('FileName', str)
     Input('Wavelength', float)
