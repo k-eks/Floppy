@@ -754,15 +754,18 @@ class WaitAny(WaitAll):
 
     def check(self):
         for inp in self.inputs.values():
-            if inp.valueSet:
-                # print('        {}: Prerequisites not met.'.format(str(self)))
-                return True
+            try:
+                if inp.valueSet:
+                    # print('        {}: Prerequisites not met.'.format(str(self)))
+                    return True
+            except Exception:
+                return False
 
     def run(self):
         super(WaitAny, self).run()
         for inp in self.inputs.values():
             if inp.valueSet:
-                self._out(inp.value)
+                self._Out(inp.value)
 
 
 class Test(Node):
