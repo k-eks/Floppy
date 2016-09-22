@@ -4,7 +4,9 @@
 from lauescript.cryst.transformations import frac2cart
 from lauescript.types.adp import ADPDataError
 from floppy.node import Node, abstractNode, Input, Output, Tag, ForLoop
-from floppy.FloppyTypes import Atom, StructureModel
+from floppy.FloppyTypes import Atom, Structure, Number
+from floppy.CustomObjects.CrystalObjects import StructureModel
+from decimal import *
 import subprocess
 import os
 
@@ -27,12 +29,42 @@ class ReadAtoms(CrystNode):
         print('2')
         self._Atoms(mol.atoms)
 
+
 class ReadStructure(CrystNode):
     Input('FileName', str)
-    Output('Model', StructureModel)
+    Output('Model', Structure)
 
     def run(self):
         super(ReadStructure, self).run()
+        structure = StructureModel()
+        structure.parse_cif(self._FileName)
+        self._Model(structure)
+
+
+class BreakStructure(CrystNode):
+    Input('Model', Structure)
+    Output('Name', str)
+    Output('CrystalSystem', str)
+    Output('SGnumber', int)
+    Output('SG', str)
+    Output('Cell', Number, list=True)
+    Output('CellErrors', Number, list=True)
+    Output('Wavelength', Number, list=True)
+    Output('Refinement', Number, list=True)
+    Output('FreeVariables', Number, list=True)
+
+
+    def run(self):
+        super(BreakStructure, self).run()
+        self._Name(self._Model.name)
+        self._CrystalSystem(self._Model.crystalSystem)
+        self._SGnumber(self._Model.sgNumber)
+        self._SG(self._Model.sg)
+        self._Cell(self._Model.cell)
+        self._CellErrors(self._Model.cellErrors)
+        self._Wavelength(self._Model.wavelength)
+        self._Refinement(self._Model.refinementIndicators)
+        self._FreeVariables(self._Model.freeVariables)
 
 
 class BreakAtom(CrystNode):
