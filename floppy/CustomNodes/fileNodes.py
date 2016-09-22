@@ -7,7 +7,7 @@ class FileNode(Node):
 
 class FileWriter(FileNode):
     """
-    Creates a new node for file operations
+    Creates a new node for file operations.
     :param nodeClass: subclass object of 'Node'.
     :return: newly created Node instance.
     """
@@ -34,9 +34,24 @@ class FileWriter(FileNode):
                 file.write(self._Content)
 
 
+class DeleteFile(FileNode):
+    """
+    Deletes a file if it exists
+    :param nodeClass: subclass object of 'Node'.
+    :return: newly created Node instance.
+    """
+    Input('FileName', str)
+    Output('Trigger', object)
+
+    def run(self):
+        super(DeleteFile, self).run()
+
+        if ntpath.exists(self._FileName):
+            os.remove(self._FileName)
+
 class FileNameFromPath(FileNode):
     """
-    Extracts the file name from a path
+    Extracts the file name from a path.
     :param nodeClass: subclass object of 'Node'.
     :return: newly created Node instance.
     """
