@@ -4,7 +4,7 @@
 from lauescript.cryst.transformations import frac2cart
 from lauescript.types.adp import ADPDataError
 from floppy.node import Node, abstractNode, Input, Output, Tag, ForLoop
-from floppy.FloppyTypes import Atom
+from floppy.FloppyTypes import Atom, StructureModel
 import subprocess
 import os
 
@@ -26,6 +26,13 @@ class ReadAtoms(CrystNode):
         mol = loader.load('quickloadedMolecule')
         print('2')
         self._Atoms(mol.atoms)
+
+class ReadStructure(CrystNode):
+    Input('FileName', str)
+    Output('Model', StructureModel)
+
+    def run(self):
+        super(ReadStructure, self).run()
 
 
 class BreakAtom(CrystNode):

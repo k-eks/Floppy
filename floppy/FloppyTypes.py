@@ -29,3 +29,13 @@ class Atom(Type):
         return obj.get_name
 
 
+class StructureModel(Type):
+    color = (36, 80, 222)
+
+    @staticmethod
+    def checkType(instance):
+        return instance
+
+    @staticmethod
+    def debugInfoGetter(obj):
+        return obj.get_name
