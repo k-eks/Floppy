@@ -16,6 +16,10 @@ class CrystNode(Node):
 
 
 class ReadAtoms(CrystNode):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('FileName', str)
     Output('Atoms', Atom, list=True)
 
@@ -77,6 +81,10 @@ class BreakStructure(CrystNode):
 
 
 class BreakAtom(CrystNode):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('Atom', Atom)
     Output('Name', str)
     Output('Element', str)
@@ -108,7 +116,41 @@ class BreakAtom(CrystNode):
     #     return super(BreakAtom, self).check()
 
 
+class BreakLongAtom(CrystNode):
+    """
+    Reads out the data of an atom with extended data for sigmas.
+    """
+    Input("Atom", LongAtom)
+    Output("AtomName", str)
+    Output("Type", str)
+    Output("SoF", Number)
+    Output("PositionFract", Number, list=True)
+    Output("PositionFractError", Number, list=True)
+    Output("Uiso", Number)
+    Output("UisoError", Number)
+    Output("IsAnisotropic", bool)
+    Output("ADP", Number, list=True)
+    Output("ADPError", Number, list=True)
+
+    def run(self):
+        super(BreakLongAtom, self).run()
+        self._AtomName(self._Atom.name)
+        self._Type(self._Atom.type)
+        self._SoF(self._Atom.sof)
+        self._PositionFract(self._Atom.positionFract)
+        self._PositionFractError(self._Atom.positionFractError)
+        self._Uiso(self._Atom.uiso)
+        self._UisoError(self._Atom.uisoError)
+        self._IsAnisotropic(self._Atom.isAnisotropic)
+        self._ADP(self._Atom.adp)
+        self._ADPError(self._Atom.adpError)
+
+
 class Frac2Cart(CrystNode):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('Position', float, list=True)
     Input('Cell', float, list=True)
     Output('Cart', float, list=True)
@@ -119,6 +161,10 @@ class Frac2Cart(CrystNode):
 
 
 class SelectAtom(CrystNode):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('AtomList', Atom, list=True)
     Input('AtomName', str)
     Output('Atom', Atom)
@@ -127,6 +173,23 @@ class SelectAtom(CrystNode):
         super(SelectAtom, self).run()
         name = self._AtomName
         self._Atom([atom for atom in self._AtomList if atom.get_name() == name][0])
+
+
+class SelectLongAtom(CrystNode):
+    """
+    Choose an atom by its name.
+    """
+    Input('AtomList', LongAtom, list=True)
+    Input('AtomName', str)
+    Output('Atom', LongAtom)
+
+    def run(self):
+        super(SelectLongAtom, self).run()
+        selectedAtom = None
+        for atom in self._AtomList:
+            if atom.name == self._AtomName:
+                selectedAtom = atom
+        self._Atom(selectedAtom)
 
 
 # maybe do this with a global lookup table
@@ -167,6 +230,21 @@ class SelectAdpParameter(CrystNode):
             self._ParameterValue(self._ADP[ALLADPPARAMETERS.index(self._ADPParameter)])
         except IndexError:
             self._ParameterValue(self._ADP[0]) # Isotropic
+
+
+class IsHydrogen(CrystNode):
+    """
+    Tests an atom whether it is an hydrogen atom or not.
+    """
+    Input("Atom", LongAtom)
+    Output("IsHydrogen", bool)
+    Output("IsOtherElement", bool)
+
+    def run(self):
+        super(IsHydrogen, self).run()
+        switch = self._Atom.type == "H"
+        self._IsHydrogen(switch)
+        self._IsOtherElement(not switch)
 
 
 class PDB2INS(CrystNode):
