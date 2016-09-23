@@ -1,7 +1,7 @@
 from decimal import *
 
 
-def error_string_to_float(string):
+def error_string_to_decimal(string):
     """
     Changes a string number such as 1.23(4) into 1.23 and 0.004.
     :param string: string, wwhich gets converted

@@ -51,3 +51,15 @@ class Number(Type):
     @staticmethod
     def debugInfoGetter(obj):
         return obj.get_name
+
+
+class LongAtom(Type):
+    color = (234, 106, 21)
+
+    @staticmethod
+    def checkType(instance):
+        return instance
+
+    @staticmethod
+    def debugInfoGetter(obj):
+        return obj.get_name

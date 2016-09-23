@@ -4,7 +4,7 @@
 from lauescript.cryst.transformations import frac2cart
 from lauescript.types.adp import ADPDataError
 from floppy.node import Node, abstractNode, Input, Output, Tag, ForLoop
-from floppy.FloppyTypes import Atom, Structure, Number
+from floppy.FloppyTypes import Atom, Structure, Number, LongAtom
 from floppy.CustomObjects.CrystalObjects import StructureModel
 from decimal import *
 import subprocess
@@ -31,17 +31,25 @@ class ReadAtoms(CrystNode):
 
 
 class ReadStructure(CrystNode):
+    """
+    Reads in a cif file and turns it into a StructureModel object.
+    """
     Input('FileName', str)
     Output('Model', Structure)
+    Output('Atoms', LongAtom, list=True)
 
     def run(self):
         super(ReadStructure, self).run()
         structure = StructureModel()
         structure.parse_cif(self._FileName)
         self._Model(structure)
+        self._Atoms(structure.atoms)
 
 
 class BreakStructure(CrystNode):
+    """
+    Reads out the parameters of a StructureModel object.
+    """
     Input('Model', Structure)
     Output('Name', str)
     Output('CrystalSystem', str)
@@ -56,6 +64,7 @@ class BreakStructure(CrystNode):
 
     def run(self):
         super(BreakStructure, self).run()
+        # handing output to pins
         self._Name(self._Model.name)
         self._CrystalSystem(self._Model.crystalSystem)
         self._SGnumber(self._Model.sgNumber)
@@ -128,9 +137,9 @@ class SelectCellParameter(CrystNode):
     :param nodeClass: subclass object of 'Node'.
     :return: newly created Node instance.
     """
-    Input('Cell', float, list=True)
+    Input('Cell', Number, list=True)
     Input('CellParameter', str, select=ALLCELLPARAMETERS, default='a')
-    Output('ParameterValue', float)
+    Output('ParameterValue', Number)
 
     def run(self):
         super(SelectCellParameter, self).run()
@@ -148,9 +157,9 @@ class SelectAdpParameter(CrystNode):
     :param nodeClass: subclass object of 'Node'.
     :return: newly created Node instance.
     """
-    Input('ADP', float, list=True)
+    Input('ADP', Number, list=True)
     Input('ADPParameter', str, select=ALLADPPARAMETERS, default='11')
-    Output('ParameterValue', float)
+    Output('ParameterValue', Number)
 
     def run(self):
         super(SelectAdpParameter, self).run()
