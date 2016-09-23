@@ -20,8 +20,8 @@ class AtomData(object):
         self._part = None
         self._positionFract = [Decimal(0)] * 3
         self._positionFractError = [Decimal(0)] * 3
-        self._usio = Decimal(0)
-        self._usioError = Decimal(0)
+        self._uiso = Decimal(0)
+        self._uisoError = Decimal(0)
         self._adp = None
         self._adpError = None
 
@@ -119,9 +119,9 @@ class AtomData(object):
     @property
     def isAnisotropic(self):
         if self._adp is None:
-            return True
-        else:
             return False
+        else:
+            return True
 
 
 class StructureModel(object):
@@ -339,7 +339,7 @@ class StructureModel(object):
             z, zError = toolbox.error_string_to_decimal(parts[4])
             atom.positionFract = [x, y, z]
             atom.positionFractError = [xError, yError, zError]
-            atom.uiso, atom.usioError = toolbox.error_string_to_decimal(parts[5])
+            atom.uiso, atom.uisoError = toolbox.error_string_to_decimal(parts[5])
             atom.sof = parts[7]
             atom.part = parts[14]
             self._atoms.append(atom)
@@ -362,7 +362,3 @@ class StructureModel(object):
                 if atom.name == uname:
                     atom.adp = u
                     atom.adpError = uError
-
-        for i in self._atoms:
-            print(i.adpError)
-
