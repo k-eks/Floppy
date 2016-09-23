@@ -6,6 +6,7 @@ from lauescript.types.adp import ADPDataError
 from floppy.node import Node, abstractNode, Input, Output, Tag, ForLoop
 from floppy.FloppyTypes import Atom, Structure, Number, LongAtom
 from floppy.CustomObjects.CrystalObjects import StructureModel
+from floppy.CustomObjects import toolbox
 from decimal import *
 import subprocess
 import os
@@ -247,7 +248,43 @@ class IsHydrogen(CrystNode):
         self._IsOtherElement(not switch)
 
 
+class RemoveHydrogen(CrystNode):
+    """
+    Removes all hydrogen atoms from a list.
+    """
+    Input("Atoms", LongAtom, list=True)
+    Output("ClearedAtoms", LongAtom, list=True)
+
+    def run(self):
+        super(RemoveHydrogen, self).run()
+        newAtomList = []
+        for atom in self._Atoms:
+            if atom.type != "H":
+                newAtomList.append(atom)
+        self._ClearedAtoms(newAtomList)
+
+
+class SortAtoms(CrystNode):
+    """
+    Removes all hydrogen atoms from a list.
+    """
+    Input("Atoms", LongAtom, list=True)
+    Output("SortedAtoms", LongAtom, list=True)
+
+    def run(self):
+        super(SortAtoms, self).run()
+        sortAtoms = sorted(self._Atoms, key=toolbox.alphanumeric_sort)
+        self._SortedAtoms(sortAtoms)
+
+        for i in sortAtoms:
+            print(i.name)
+
+
 class PDB2INS(CrystNode):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('FileName', str)
     Input('Wavelength', float)
     Input('HKLF', int)
@@ -320,6 +357,10 @@ class PDB2INS(CrystNode):
 
 
 class BreakPDB(CrystNode):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('PDB', str)
     Output('Code', str)
     Output('R1', float)
@@ -337,6 +378,10 @@ class BreakPDB(CrystNode):
 
 
 class ForEachAtomPair(ForLoop):
+    """
+    lauescript based
+    """
+    Tag("lauescript")
     Input('Start', Atom, list=True)
     Output('Atom1', Atom)
     Output('Atom2', Atom)

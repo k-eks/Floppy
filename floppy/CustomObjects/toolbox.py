@@ -1,4 +1,5 @@
 from decimal import *
+import re
 
 
 def error_string_to_decimal(string):
@@ -18,3 +19,8 @@ def error_string_to_decimal(string):
     else:
         value = Decimal(string)
     return value, error
+
+
+def alphanumeric_sort(x):
+   sort = re.search(r'([A-Z]+)(\d+)',x.name)
+   return sort.group(1), int(sort.group(2))
