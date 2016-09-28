@@ -5,7 +5,7 @@ import re
 def error_string_to_decimal(string):
     """
     Changes a string number such as 1.23(4) into 1.23 and 0.004.
-    :param string: string, wwhich gets converted
+    :param string: string, which gets converted
     :return: (decimal, decimal), value and error
     """
     string = string.strip()
@@ -21,6 +21,11 @@ def error_string_to_decimal(string):
     return value, error
 
 
-def alphanumeric_sort(x):
-   sort = re.search(r'([A-Z]+)(\d+)',x.name)
-   return sort.group(1), int(sort.group(2))
+def atom_name_sort(x):
+    """
+    Used in conjunction with AtomData objects to sort them by name.
+    :param x: AtomData, by which to sort
+    :return: function, key for the sorted statement
+    """
+    sort = re.search(r'([A-Z]+)(\d+)',x.name)
+    return sort.group(1), int(sort.group(2))

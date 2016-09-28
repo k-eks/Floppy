@@ -273,11 +273,8 @@ class SortAtoms(CrystNode):
 
     def run(self):
         super(SortAtoms, self).run()
-        sortAtoms = sorted(self._Atoms, key=toolbox.alphanumeric_sort)
+        sortAtoms = sorted(self._Atoms, key=toolbox.atom_name_sort)
         self._SortedAtoms(sortAtoms)
-
-        for i in sortAtoms:
-            print(i.name)
 
 
 class PDB2INS(CrystNode):
