@@ -9,7 +9,7 @@ from floppy.CustomObjects.CrystalObjects import StructureModel
 from floppy.CustomObjects import toolbox
 from decimal import *
 import subprocess
-import os
+import os, glob
 
 @abstractNode
 class CrystNode(Node):
@@ -38,6 +38,7 @@ class ReadAtoms(CrystNode):
 class ReadStructure(CrystNode):
     """
     Reads in a cif file and turns it into a StructureModel object.
+    If '*.cif' is given, the first cif file in the folder is taken.
     """
     Input('FileName', str)
     Output('Model', Structure)
@@ -46,6 +47,8 @@ class ReadStructure(CrystNode):
     def run(self):
         super(ReadStructure, self).run()
         structure = StructureModel()
+        if "*.cif" in self._FileName.lower():
+            self._FileName = glob.glob("*.cif")[0] # takes the frist cif file
         structure.parse_cif(self._FileName)
         self._Model(structure)
         self._Atoms(structure.atoms)
