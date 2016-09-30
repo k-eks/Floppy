@@ -36,7 +36,7 @@ class FileWriter(FileNode):
 
 class DeleteFile(FileNode):
     """
-    Deletes a file if it exists
+    Deletes a file if it exists.
     :param nodeClass: subclass object of 'Node'.
     :return: newly created Node instance.
     """
@@ -66,3 +66,19 @@ class FileNameFromPath(FileNode):
         self._Path(ntpath.dirname(self._PathAndFile))
         self._FileName(ntpath.basename(self._PathAndFile))
         self._Extension(ntpath.splitext(self._PathAndFile))
+
+
+class JoinPath(FileNode):
+    """
+    Joins to strings which represent a path and a path or file.
+    :param nodeClass: subclass object of 'Node'.
+    :return: newly created Node instance.
+    """
+    Input("Path", str)
+    Input("PathOrFileName", str)
+    Output("JoinedPath", str)
+
+    def run(self):
+        super(JoinPath, self).run()
+
+        self._JoinedPath(os.path.join(self._Path, self._PathOrFileName))
