@@ -48,8 +48,10 @@ class ReadStructure(CrystNode):
         super(ReadStructure, self).run()
         structure = StructureModel()
         if "*.cif" in self._FileName.lower():
-            self._FileName = glob.glob("*.cif")[0] # takes the frist cif file
-        structure.parse_cif(self._FileName)
+            fileName = glob.glob(self._FileName)[0] # takes the frist cif file
+        else:
+            fileName = self._FileName
+        structure.parse_cif(fileName)
         self._Model(structure)
         self._Atoms(structure.atoms)
 

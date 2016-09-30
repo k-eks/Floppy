@@ -4,20 +4,24 @@ import re
 
 def error_string_to_decimal(string):
     """
-    Changes a string number such as 1.23(4) into 1.23 and 0.004.
+    Changes a string number such as 1.23(4) into 1.23 and 0.04.
     :param string: string, which gets converted
     :return: (decimal, decimal), value and error
     """
     string = string.strip()
-    value = 0
-    error = 0
-    if '(' in string:
+    if '(' in string and "." in string:
         precission = string.index('.')
         length = string.index('(')
         value = Decimal(string[:length])
         error = Decimal(string[length+1:-1]) * Decimal(10) ** Decimal(-(length - precission - 1))
     else:
-        value = Decimal(string)
+        try:
+            value = Decimal(string)
+            error = Decimal(0)
+        except InvalidOperation:
+            print("Warning: Invalid operation was thrown in 'error_string_to_decimal'.")
+            value = Decimal(0)
+            error = Decimal(0)
     return value, error
 
 
