@@ -30,7 +30,6 @@ class ToList(GeneralNode):
     :param nodeClass: subclass object of 'Node'.
     :return: newly created Node instance.
     """
-    Input("TypeCast", str, list=True)
     Input("Input1", object)
     Input("Input2", object)
     Input("Input3", object, optional=True)
@@ -47,7 +46,6 @@ class ToList(GeneralNode):
 
         # Loop over inputs an put them into a new list
         newList = []
-        print(self.getInputPin("Input1").info.value)
         for name in self.inputs:
             if "Input" in name: # this skips TypeCast and Trigger
                 currentVar = self.getInputPin(name).info.value
