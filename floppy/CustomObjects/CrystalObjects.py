@@ -17,6 +17,7 @@ class AtomData(object):
         self._name = None
         self._type = None
         self._sof = None
+        self._sofError = None
         self._part = None
         self._positionFract = [Decimal(0)] * 3
         self._positionFractError = [Decimal(0)] * 3
@@ -51,6 +52,15 @@ class AtomData(object):
     @sof.setter
     def sof(self, value):
         self._sof = value
+
+
+    @property
+    def sofError(self):
+        return self._sofError
+
+    @sof.setter
+    def sofError(self, value):
+        self._sofError = value
 
 
     @property
@@ -340,7 +350,7 @@ class StructureModel(object):
             atom.positionFract = [x, y, z]
             atom.positionFractError = [xError, yError, zError]
             atom.uiso, atom.uisoError = toolbox.error_string_to_decimal(parts[5])
-            atom.sof = parts[7]
+            atom.sof, atom.sofError = toolbox.error_string_to_decimal(parts[7])
             atom.part = parts[14]
             self._atoms.append(atom)
 
