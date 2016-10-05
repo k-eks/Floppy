@@ -10,6 +10,9 @@ from PyQt5.QtCore import Qt, QPoint, QSettings
 from PyQt5.QtGui import *
 from PyQt5.Qt import QTimer
 import platform
+import logging
+
+logger = logging.getLogger('Floppy')
 
 
 LOCALPORT = 8080
@@ -59,7 +62,7 @@ class Painter2D(Painter):
         self.pinPositions = {}
         self.drawItems = []
         self.drawItemsOfNode = {}
-        self.watchingItems = set()
+        self.watchingItems = []
         self.triggers = set()
         self.contextSensitive = False
         self.rightClickedNode = None
@@ -87,7 +90,7 @@ class Painter2D(Painter):
         self.pinPositions = {}
         self.drawItems = []
         self.drawItemsOfNode = {}
-        self.watchingItems = set()
+        self.watchingItems = []
         self.rightClickedNode = None
         self.lastReport = None
         self.contextSensitive = True
@@ -178,7 +181,7 @@ class Painter2D(Painter):
             self.relayTo = None
 
     def registerWatchingItem(self, item):
-        self.watchingItems.add(item)
+        self.watchingItems.append(item)
 
     def removeWatchingItem(self, item):
         self.watchingItems.remove(item)
@@ -231,15 +234,16 @@ class Painter2D(Painter):
                 self.drag = event.pos()
 
         if event.button() == Qt.LeftButton:
+
             for item in self.watchingItems:
                 item.watchDown(event.pos())
+                item.collide(event.pos())
+                return
+
             for drawItem in self.drawItems:
                 if issubclass(type(drawItem), Selector) or issubclass(type(drawItem), LineEdit):
-                    # print(drawItem.data.name, drawItem._x,drawItem._y, event.pos())
-                    # print(drawItem.data.name, drawItem._xx,drawItem._yy)
                     if drawItem.collide(event.pos()):
-                        # print(drawItem)
-                        pass
+                        break
 
             for point, i in self.inputPinPositions:
                 # print(event.pos(), point, i)
@@ -679,41 +683,6 @@ class Painter2D(Painter):
                 path.cubicTo(p21, p22, p31, p32, end.x(), end.y())
                 painter.drawPath(path)
 
-    # def drawLineEdit(self, x, y, w, h, text, painter, alignment):
-    #     text = str(text)
-    #     pen = QPen(Qt.darkGray)
-    #     painter.setPen(pen)
-    #     xx, yy, ww, hh = x+(w)/2.-(w-25)/2., y-18, w-25, 12
-    #     painter.drawRoundedRect(xx, yy, ww, hh, 2, 20)
-    #     pen.setColor(Qt.gray)
-    #     painter.setFont(QFont('Helvetica', 8))
-    #     painter.setPen(pen)
-    #     painter.drawText(xx+5, yy-3, ww-10, hh+5, alignment, text)
-    #
-    # def drawLabel(self, x, y, w, h, text, painter, alignment):
-    #     text = str(text)
-    #     pen = QPen(Qt.gray)
-    #     painter.setPen(pen)
-    #     xx, yy, ww, hh = x+(w)/2.-(w-25)/2., y-18, w-18, 12
-    #     painter.setFont(QFont('Helvetica', 8))
-    #     painter.setPen(pen)
-    #     painter.drawText(xx+5, yy-3, ww-10, hh+5, alignment, text)
-    #
-    # def drawSelector(self, x, y, w, h, text, painter, alignment):
-    #     text = str(text)
-    #     pen = QPen(Qt.darkGray)
-    #     painter.setPen(pen)
-    #     xx, yy, ww, hh = x+(w)/2.-(w-25)/2., y-18, w-25, 12
-    #     painter.drawRoundedRect(xx, yy, ww, hh, 2, 20)
-    #     painter.setFont(QFont('Helvetica', 8))
-    #     painter.setPen(pen)
-    #     painter.drawText(xx-5, yy-3, ww-20, hh+5, alignment, text)
-    #     pen.setColor(Qt.gray)
-    #     # pen.setWidth(3)
-    #     painter.setPen(pen)
-    #     painter.setBrush(QBrush(Qt.gray))
-    #     points = QPoint(xx+w-40, yy+2), QPoint(xx+10-40 +w, yy+2), QPoint(xx+5+w-40, yy+9)
-    #     painter.drawPolygon(*points)
 
     def registerNode(self, node, position, silent=False):
         if not silent:
@@ -816,6 +785,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connectHint = self.settings.value('DefaultConnection', type=str)
         settingsDialog = SettingsDialog(self, settings=self.settings, globals=globals())
         settingsDialog.close()
+
+    def setArgs(self, args):
+        if args.test:
+            logger.info('Performing test.')
+            self.loadGraph(override=args.test[0])
+            self.runCode()
 
     def initActions(self):
         self.exitAction = QAction(QIcon(os.path.join(self.iconRoot, 'quit.png')), 'Quit', self)
@@ -1128,24 +1103,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.statusBar.showMessage('Cannot Unpause Interpreter. No Interpreter Available.', 2000)
 
     def spawnRunner(self):
-        print('Spawning new Runner.')
+        logger.debug('Spawning new Runner.')
         self.statusBar.showMessage('New Remote Interpreter spawned.', 2000)
         self.drawer.graph.spawnAndConnect(LOCALPORT)
+        logger.debug('Connected to Runner.')
 
     def runCode(self, *args):
         self.drawer.graph.execute()
         self.statusBar.showMessage('Code execution started.', 2000)
 
-    def loadGraph(self, *args):
-        fileName = QFileDialog.getOpenFileName(self, 'Open File', '~/',
-                                               filter='Floppy Files (*.ppy);; Any (*.*)')[0]
+    def loadGraph(self, *args, override=False):
+        if not override:
+            fileName = QFileDialog.getOpenFileName(self, 'Open File', '~/',
+                                                   filter='Floppy Files (*.ppy);; Any (*.*)')[0]
+        else:
+            fileName = override
         if fileName:
+            logger.debug('Attempting to load graph: {}'.format(fileName))
             self.drawer.graph.load(fileName, callback=self.raiseErrorMessage)
             self.statusBar.showMessage('Graph loaded from {}.'.format(fileName), 2000)
+            logger.info('Successfully loaded graph: {}'.format(fileName))
 
     def raiseErrorMessage(self, message):
         err = QErrorMessage(self)
         err.showMessage(message)
+        logger.error(message)
 
     def saveGraph(self, *args):
         """
@@ -1158,8 +1140,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         if not fileName.endswith('.ppy'):
              fileName += '.ppy'
+        logger.debug('Attempting to save graph as {}'.format(fileName))
         self.drawer.graph.save(fileName)
         self.statusBar.showMessage('Graph saved as {}.'.format(fileName), 2000)
+        logger.info('Save graph as {}'.format(fileName))
 
     def resizeEvent(self, event):
         super(MainWindow, self).resizeEvent(event)
@@ -1170,7 +1154,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.NodeListView.setup(self.FilterEdit, self.drawer.graph)
 
     def closeEvent(self, event):
+        logger.debug('Attempting to kill interpreter.')
         self.killRunner()
+        logger.debug('MainWindow is shutting down.')
         super(MainWindow, self).closeEvent(event)
 
     def keyPressEvent(self, event):
@@ -1215,6 +1201,8 @@ class DrawItem(object):
         point = QPoint(x+w-24, y+h-60)*transform
         self._xx = point.x()
         self._yy = point.y()
+
+        self._yy = self._y + PINSIZE
 
     def draw(self, painter, asLabel=False):
         alignment = self.__class__.alignment
@@ -1277,14 +1265,21 @@ class Selector(DrawItem):
         self.select = str(self.items[self.highlight-1])
         self.parent.inputs[self.data.name].setDefault(self.select)
         # self.parent._Boolean.setDefault(self.select)
+        # self.painter.removeWatchingItem(self)
 
     def collide(self, pos):
         if self._x < pos.x() < self._xx+16 and self._y < pos.y() < self._yy:
             self.state = (self.state + 1) % 2
-            self.painter.registerWatchingItem(self)
+            try:
+                self.painter.registerWatchingItem(self)
+            except ValueError:
+                pass
         else:
             if self.state:
-                self.painter.removeWatchingItem(self)
+                try:
+                    self.painter.removeWatchingItem(self)
+                except ValueError:
+                    pass
             self.state = 0
         return super(Selector, self).collide(pos)
 
@@ -1319,6 +1314,7 @@ class Selector(DrawItem):
             painter.setBrush(QBrush(Qt.gray))
             points = QPoint(xx+self.w-40, yy-2+PINSIZE/2), QPoint(xx+10-40 + self.w, yy-2+PINSIZE/2), QPoint(xx+5+self.w-40, yy+4+PINSIZE/2)
             painter.drawPolygon(*points)
+            painter.setBrush(QColor(40, 40, 40))
         else:
             if not last:
                 return self
@@ -1415,10 +1411,18 @@ class LineEdit(DrawItem):
         if event.key() == 16777219:
             self.text = self.text[:-1]
         else:
-            self.text += event.text()
+            self.text += self.sanitizeInputString(event.text())
         self.painter.update()
         self.parent.inputs[self.data.name].setDefault(self.text)
         # print(event.key())
+
+    def sanitizeInputString(self, string):
+        string = string.strip('\r\n')
+        try:
+            self.data.info.varType(string)
+        except ValueError:
+            return ''
+        return string
 
 
 class InputLabel(DrawItem):
