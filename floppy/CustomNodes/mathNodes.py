@@ -1,5 +1,7 @@
 from floppy.node import Node, abstractNode, Input, Output, Tag
+from floppy.FloppyTypes import Number
 from math import sin, cos, pi
+import numpy as np
 
 
 def norm(v: list):
@@ -114,3 +116,29 @@ class RotateAbout(VectorNode):
         yy = (b*(u**2+w**2)-v*(a*u+c*w-u*x-v*y-w*z)) * (1-cos(t)) + y*cos(t) + ( 1*c*u-a*w+w*x-u*z) * sin(t)
         zz = (c*(u**2+v**2)-w*(a*u+b*v-u*x-v*y-w*z)) * (1-cos(t)) + z*cos(t) + (-1*b*u+a*v-v*x+u*y) * sin(t)
         self._RotatedPoint([xx, yy, zz])
+
+
+class Mean(MathNode):
+    """
+    Reads a list of numbers and calculates the mean and standard deviation.
+    :param nodeClass: subclass object of 'Node'.
+    :return: newly created Node instance.
+    """
+    Input('Numbers', Number, list=True)
+    Input('Round', bool, select=[True, False])
+    Input('Precision', int)
+    Output('MeanValue', Number)
+    Output('StdDeviation', Number)
+
+    def run(self):
+        super(Mean, self).run()
+
+        a = np.array(self._Numbers)
+        if self._Round:
+            mean = round(np.mean(a), self._Precision)
+            stdDev = round(np.std(a), self._Precision)
+        else:
+            mean = np.mean(a)
+            stdDev = np.std(a)
+        self._MeanValue(mean)
+        self._StdDeviation(stdDev)
